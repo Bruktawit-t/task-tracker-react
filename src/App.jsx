@@ -12,12 +12,14 @@ function App() {
   const [newTask, setNewTask] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [newPriority, setNewPriority] = useState('');
   const [filter, setFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editPriority, setEditPriority] = useState('');
   const [dueDateError, setDueDateError] = useState('');
   const [view, setView] = useState('list');
 
@@ -47,6 +49,10 @@ function App() {
       setDueDateError('Due date is required.');
       return;
     }
+    if (!newPriority) {
+      setDueDateError('Priority is required.');
+      return;
+    }
     const dueYear = new Date(newDueDate).getFullYear();
     if (dueYear !== currentYear) {
       setDueDateError(`Due date must be within ${currentYear}.`);
@@ -58,13 +64,15 @@ function App() {
       text: capitalizeFirstLetter(newTask.trim()),
       completed: false,
       dueDate: newDueDate,
-      description: newDescription.trim()
+      description: newDescription.trim(),
+      priority: newPriority
     };
 
     setTasks([task, ...tasks]);
     setNewTask('');
     setNewDueDate('');
     setNewDescription('');
+    setNewPriority('');
     setDueDateError('');
     inputRef.current?.focus();
   };
@@ -78,6 +86,7 @@ function App() {
     setEditText(task.text);
     setEditDueDate(task.dueDate);
     setEditDescription(task.description || '');
+    setEditPriority(task.priority);
   };
 
   const cancelEdit = () => {
@@ -85,6 +94,7 @@ function App() {
     setEditText('');
     setEditDueDate('');
     setEditDescription('');
+    setEditPriority('');
   };
 
   const saveEdit = (id) => {
@@ -92,9 +102,13 @@ function App() {
       setDueDateError('Task name is required.');
       return;
     }
+    if (!editPriority) {
+      setDueDateError('Priority is required.');
+      return;
+    }
     setTasks(tasks.map(task =>
       task.id === id
-        ? { ...task, text: capitalizeFirstLetter(editText.trim()), dueDate: editDueDate, description: editDescription.trim() }
+        ? { ...task, text: capitalizeFirstLetter(editText.trim()), dueDate: editDueDate, description: editDescription.trim(), priority: editPriority }
         : task
     ));
     cancelEdit();
@@ -140,219 +154,188 @@ function App() {
     if (tasks.length === 0) return 'No tasks yet!';
     if (filteredTasks.length === 0) return 'No matching tasks!';
     return null;
+
   };
-
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white transition">
-      <header className="p-5 bg-gray-100 dark:bg-gray-800 shadow flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Task Tracker</h1>
-        <div className="flex gap-3 items-center">
-          <button onClick={() => setView('add')} className={`px-3 py-1 rounded ${view === 'add' ? 'bg-blue-600 text-white' : 'bg-gray-300 dark:bg-gray-700'}`}>Add Task</button>
-          <button onClick={() => setView('list')} className={`px-3 py-1 rounded ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-300 dark:bg-gray-700'}`}>View Tasks</button>
-          <button onClick={() => setDarkMode(!darkMode)} className="text-xl">
-            {darkMode ? <FaSun /> : <FaMoon />}
-          </button>
-        </div>
-      </header>
+    <div className={`min-h-screen px-4 py-6 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+      <div className="max-w-3xl mx-auto">
+        <header className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Task Tracker</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setView('add')} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+              Add Task
+            </button>
+            <button onClick={() => setView('list')} className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
+              View Tasks
+            </button>
+            <button onClick={() => setDarkMode(!darkMode)} className="ml-2 text-xl">
+              {darkMode ? <FaSun /> : <FaMoon />}
+            </button>
+          </div>
+        </header>
 
-      <main className="max-w-4xl mx-auto p-6">
         {view === 'add' && (
-          <>
-            <form onSubmit={handleAddTask} className="flex flex-col gap-3 mb-4">
-              <input
-                ref={inputRef}
-                type="text"
-                value={newTask}
-                onChange={(e) => {
-                  setNewTask(e.target.value);
-                  setDueDateError('');
-                }}
-                placeholder="New task..."
-                className="p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-800"
-              />
-              <input
-                type="date"
-                value={newDueDate}
-                min={today}
-                onChange={(e) => {
-                  setNewDueDate(e.target.value);
-                  setDueDateError('');
-                }}
-                className="p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-800"
-              />
-              <textarea
-                placeholder="Optional description..."
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                className="w-full p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-800"
-              />
-              <button className="self-start px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                <FaPlus />
-              </button>
-            </form>
-            {dueDateError && <p className="text-red-500 text-sm mb-3">{dueDateError}</p>}
-          </>
+          <form onSubmit={handleAddTask} className="flex flex-col gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Task name"
+              value={newTask}
+              onChange={e => setNewTask(e.target.value)}
+              className="p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              ref={inputRef}
+            />
+            <input
+              type="date"
+              min={today}
+              value={newDueDate}
+              onChange={e => setNewDueDate(e.target.value)}
+              className="p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            <textarea
+              placeholder="Optional description"
+              value={newDescription}
+              onChange={e => setNewDescription(e.target.value)}
+              className="p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            />
+            <select
+              value={newPriority}
+              onChange={e => setNewPriority(e.target.value)}
+              className="p-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            >
+              <option value="">Select priority</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            {dueDateError && <p className="text-red-500">{dueDateError}</p>}
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 justify-center">
+              <FaPlus /> Add Task
+            </button>
+          </form>
         )}
 
         {view === 'list' && (
           <>
             <input
               type="text"
-              placeholder="Search by task name..."
+              placeholder="Search tasks..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full mb-4 p-2 border rounded bg-white dark:bg-gray-800"
+              onChange={e => setSearchTerm(e.target.value)}
+              className="p-2 border rounded mb-4 w-full bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
             />
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <div className="flex gap-2">
-                {['All', 'Active', 'Completed'].map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setFilter(type)}
-                    className={`px-3 py-1 rounded ${filter === type ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                {tasks.length > 0 && (
-                  <>
-                    <button onClick={clearCompleted} title="Clear Completed" className="text-red-600">
-                      <FaCheck />
-                    </button>
-                    <button onClick={clearAll} title="Clear All" className="text-red-700">
-                      <FaTrash />
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="flex gap-2 mb-4">
+              {['All', 'Active', 'Completed'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1 rounded ${filter === f ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-white'}`}
+                >
+                  {f}
+                </button>
+              ))}
             </div>
-            <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2 mb-1">
-              <div
-                className="bg-blue-500 dark:bg-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${completionPercent}%` }}
-              />
+
+            <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+              Completion: {completionPercent.toFixed(0)}%
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-right">
-              Total Tasks: {tasks.length}
-            </p>
 
-            {emptyMessage() ? (
-              <p className="text-center italic text-gray-500">{emptyMessage()}</p>
-            ) : (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="tasks">
-                  {(provided) => {
-                    const grouped = filteredTasks.reduce((acc, task) => {
-                      acc[task.dueDate] = acc[task.dueDate] || [];
-                      acc[task.dueDate].push(task);
-                      return acc;
-                    }, {});
-                    const sortedDates = Object.keys(grouped).sort();
-
-                    return (
-                      <div ref={provided.innerRef} {...provided.droppableProps}>
-                        {sortedDates.map((dateGroup) => (
-                          <div key={dateGroup} className="mb-6">
-                            <h2 className="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">
-                              {dateGroup}
-                            </h2>
-                            {grouped[dateGroup].sort((a, b) => a.completed - b.completed).map((task, index) => {
-                              const realIndex = filteredTasks.findIndex(t => t.id === task.id);
-                              return (
-                                <Draggable key={task.id} draggableId={task.id.toString()} index={realIndex}>
-                                  {(provided) => (
-                                    <div
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      className="flex justify-between items-start bg-white dark:bg-gray-800 p-3 border rounded shadow mb-2"
-                                    >
-                                      <div className="flex items-start gap-3 flex-1">
-                                        <input
-                                          type="checkbox"
-                                          checked={task.completed}
-                                          onChange={() => toggleComplete(task.id)}
-                                          className="form-checkbox h-5 w-5 text-blue-600 mt-1"
-                                        />
-                                        {editId === task.id ? (
-                                          <div className="flex flex-col w-full">
-                                            <input
-                                              type="text"
-                                              value={editText}
-                                              onChange={(e) => setEditText(e.target.value)}
-                                              className="p-1 rounded border bg-white dark:bg-gray-700 mb-1"
-                                            />
-                                            <input
-                                              type="date"
-                                              value={editDueDate}
-                                              min={today}
-                                              onChange={(e) => setEditDueDate(e.target.value)}
-                                              className="p-1 mb-1 rounded border bg-white dark:bg-gray-700"
-                                            />
-                                            <textarea
-                                              value={editDescription}
-                                              onChange={(e) => setEditDescription(e.target.value)}
-                                              placeholder="Description"
-                                              className="p-1 rounded border bg-white dark:bg-gray-700"
-                                            />
-                                          </div>
-                                        ) : (
-                                          <div className="flex flex-col">
-                                            <span className={`break-words ${task.completed ? 'line-through text-gray-400' : ''}`}>
-                                              {task.text}
-                                            </span>
-                                            {task.description && (
-                                              <span className="text-sm italic text-gray-500">{task.description}</span>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="flex gap-2 ml-4">
-                                        {editId === task.id ? (
-                                          <>
-                                            <button onClick={() => saveEdit(task.id)} title="Save">
-                                              <FaCheck className="text-green-500" />
-                                            </button>
-                                            <button onClick={cancelEdit} title="Cancel">
-                                              <FaTimes className="text-gray-500" />
-                                            </button>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <button onClick={() => startEdit(task)} title="Edit">
-                                              <FaEdit className="text-yellow-500" />
-                                            </button>
-                                            <button onClick={() => deleteTask(task.id)} title="Delete">
-                                              <FaTrash className="text-red-500" />
-                                            </button>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </Draggable>
-                              );
-                            })}
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="tasks">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                    {filteredTasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className={`p-4 rounded border shadow-sm ${task.completed ? 'bg-green-100 dark:bg-green-900' : 'bg-white dark:bg-gray-800'}`}
+                          >
+                            {editId === task.id ? (
+                              <>
+                                <input
+                                  value={editText}
+                                  onChange={e => setEditText(e.target.value)}
+                                  className="w-full p-1 mb-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                />
+                                <input
+                                  type="date"
+                                  value={editDueDate}
+                                  onChange={e => setEditDueDate(e.target.value)}
+                                  className="w-full p-1 mb-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                />
+                                <textarea
+                                  value={editDescription}
+                                  onChange={e => setEditDescription(e.target.value)}
+                                  className="w-full p-1 mb-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                />
+                                <select
+                                  value={editPriority}
+                                  onChange={e => setEditPriority(e.target.value)}
+                                  className="w-full p-1 mb-2 border rounded bg-white text-black dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                >
+                                  <option value="">Select priority</option>
+                                  <option value="low">Low</option>
+                                  <option value="medium">Medium</option>
+                                  <option value="high">High</option>
+                                </select>
+                                {dueDateError && <p className="text-red-500 text-sm mb-2">{dueDateError}</p>}
+                                <div className="flex gap-2">
+                                  <button onClick={() => saveEdit(task.id)} className="text-green-600"><FaCheck /></button>
+                                  <button onClick={cancelEdit} className="text-red-600"><FaTimes /></button>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex items-center justify-between">
+                                  <h2 className={`text-lg font-semibold ${task.completed ? 'line-through' : ''}`}>
+                                    {task.text}
+                                  </h2>
+                                  <div className="flex gap-2">
+                                    <button onClick={() => toggleComplete(task.id)} className="text-green-600"><FaCheck /></button>
+                                    <button onClick={() => startEdit(task)} className="text-blue-600"><FaEdit /></button>
+                                    <button onClick={() => deleteTask(task.id)} className="text-red-600"><FaTrash /></button>
+                                  </div>
+                                </div>
+                                {task.description && <p className="text-sm mt-1">{task.description}</p>}
+                                <p className="text-sm mt-1">Due: {task.dueDate}</p>
+                                <span className={`inline-block mt-1 px-2 py-1 text-xs rounded 
+                                  ${task.priority === 'high' ? 'bg-red-500 text-white' :
+                                    task.priority === 'medium' ? 'bg-yellow-500 text-white' :
+                                    'bg-green-500 text-white'}`}>
+                                  {task.priority}
+                                </span>
+                              </>
+                            )}
                           </div>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    );
-                  }}
-                </Droppable>
-              </DragDropContext>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+
+            {emptyMessage() && <p className="mt-4 text-center text-gray-500">{emptyMessage()}</p>}
+
+            {tasks.length > 0 && (
+              <div className="flex justify-between mt-6">
+                <button onClick={clearCompleted} className="text-sm text-yellow-600 hover:underline">
+                  Clear Completed
+                </button>
+                <button onClick={clearAll} className="text-sm text-red-600 hover:underline">
+                  Clear All
+                </button>
+              </div>
             )}
           </>
         )}
-      </main>
-
-      <footer className="text-center p-4 text-sm text-gray-500 dark:text-gray-400">
-        © 2025 Task Tracker
-      </footer>
+      </div>
     </div>
   );
 }
 
 export default App;
+
