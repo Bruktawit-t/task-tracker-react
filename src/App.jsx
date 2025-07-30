@@ -8,7 +8,8 @@ import './App.css';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
-  const [tasks, setTasks] = useState(() => JSON.parse(localStorage.getItem('tasks')) || []);
+  const [tasks, setTasks] = useState([]);
+
   const [newTask, setNewTask] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -34,8 +35,9 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    fetchTasks().then(setTasks);
+  }, []);
+  
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -60,22 +62,21 @@ function App() {
     }
 
     const task = {
-      id: Date.now(),
-      text: capitalizeFirstLetter(newTask.trim()),
-      completed: false,
-      dueDate: newDueDate,
+      title: capitalizeFirstLetter(newTask.trim()),
       description: newDescription.trim(),
-      priority: newPriority
+      due_date: newDueDate,
+      completed: false,
     };
-
-    setTasks([task, ...tasks]);
-    setNewTask('');
-    setNewDueDate('');
-    setNewDescription('');
-    setNewPriority('');
-    setDueDateError('');
-    inputRef.current?.focus();
-  };
+    
+    addTask(task).then((createdTask) => {
+      setTasks([createdTask, ...tasks]);
+      setNewTask('');
+      setNewDueDate('');
+      setNewDescription('');
+      setNewPriority('');
+      setDueDateError('');
+    });
+  }    
 
   const toggleComplete = (id) => {
     setTasks(tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task));

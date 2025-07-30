@@ -6,7 +6,7 @@ export default function TaskCard({ task, onDelete, onToggleComplete, onEdit }) {
 
   const handleSave = () => {
     const trimmed = editInput.trim();
-    if (!trimmed) return;
+    if (!trimmed) return; 
     onEdit(task.id, trimmed);
     setIsEditing(false);
   };
