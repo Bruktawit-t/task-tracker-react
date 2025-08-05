@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Login from './components/Login';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   FaSun, FaMoon, FaTrash,
@@ -315,6 +316,19 @@ function App() {
       </div>
     </div>
   );
+  const token = localStorage.getItem('token');
+
+fetch('https://task-backend-pxt7.onrender.com/api/tasks', {
+  headers: {
+    'Authorization': `Bearer ${token}`,
+  }
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log('Tasks:', data);
+    // set state or display tasks here
+  });
+
 }
 
 export default App;
