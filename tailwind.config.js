@@ -1,9 +1,9 @@
 // tailwind.config.js
 module.exports = {
-  darkMode: 'class',
-  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  darkMode: 'class', // ← This is REQUIRED for toggle-based dark mode
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {},
   },
   plugins: [],
-}
+};
