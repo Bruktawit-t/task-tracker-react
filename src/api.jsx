@@ -17,9 +17,8 @@ export const addTask = async (task) => {
   try {
     const res = await fetch(`${API_BASE}/tasks`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        ...getAuthHeaders()
+      headers: {
+        ...getAuthHeaders(true)
       },
       body: JSON.stringify(task),
     });
@@ -48,9 +47,8 @@ export const updateTask = async (id, updatedTask) => {
   try {
     const res = await fetch(`${API_BASE}/tasks/${id}`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        ...getAuthHeaders()
+      headers: {
+        ...getAuthHeaders(true)
       },
       body: JSON.stringify(updatedTask),
     });
@@ -62,8 +60,7 @@ export const updateTask = async (id, updatedTask) => {
   }
 };
 
-// Auth API calls:
-
+// Auth API calls remain unchanged
 export const registerUser = async (userData) => {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
@@ -84,8 +81,9 @@ export const loginUser = async (credentials) => {
   return await res.json();
 };
 
-// Helper function to get Authorization header from stored token
-function getAuthHeaders() {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Modified: No Authorization headers sent anymore
+function getAuthHeaders(includeContentType = false) {
+  const headers = {};
+  if (includeContentType) headers['Content-Type'] = 'application/json';
+  return headers;
 }

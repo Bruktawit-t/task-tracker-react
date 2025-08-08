@@ -7,6 +7,9 @@ import {
 } from './api';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { FaSun, FaMoon } from 'react-icons/fa';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
+import './components/AuthForm.css'; // Auth form styling
 
 function App() {
   const [darkMode, setDarkMode] = useState(
@@ -21,6 +24,11 @@ function App() {
     priority: '',
   });
 
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem('token')
+  );
+  const [showRegister, setShowRegister] = useState(false);
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (darkMode) {
@@ -32,10 +40,12 @@ function App() {
   }, [darkMode]);
 
   useEffect(() => {
-    fetchTasks()
-      .then(setTasks)
-      .catch((err) => console.error('Fetch error:', err.message));
-  }, []);
+    if (isLoggedIn) {
+      fetchTasks()
+        .then(setTasks)
+        .catch((err) => console.error('Fetch error:', err.message));
+    }
+  }, [isLoggedIn]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -90,6 +100,30 @@ function App() {
     setTasks(updated);
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="auth-wrapper">
+        {showRegister ? (
+          <>
+            <RegisterForm onRegister={() => setIsLoggedIn(true)} />
+            <p className="switch-link">
+              Already have an account?{' '}
+              <button onClick={() => setShowRegister(false)}>Login</button>
+            </p>
+          </>
+        ) : (
+          <>
+            <LoginForm onLogin={() => setIsLoggedIn(true)} />
+            <p className="switch-link">
+              Don't have an account?{' '}
+              <button onClick={() => setShowRegister(true)}>Register</button>
+            </p>
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6 transition-colors duration-300 bg-white dark:bg-gray-900 dark:text-white">
       <div className="flex justify-between items-center mb-6">
@@ -113,12 +147,23 @@ function App() {
             View Tasks
           </button>
         </div>
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-full bg-gray-300 dark:bg-gray-700"
-        >
-          {darkMode ? <FaSun /> : <FaMoon />}
-        </button>
+        <div className="space-x-2">
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded-full bg-gray-300 dark:bg-gray-700"
+          >
+            {darkMode ? <FaSun /> : <FaMoon />}
+          </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              setIsLoggedIn(false);
+            }}
+            className="p-2 px-4 rounded bg-red-500 text-white"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {activeTab === 'add' && (
