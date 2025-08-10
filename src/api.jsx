@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://task-tracker-backend-production-ce42.up.railway.app'; // or your backend URL
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api"; // or your backend URL
 
 export const fetchTasks = async () => {
   try {
