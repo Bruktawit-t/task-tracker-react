@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { register, login } from '../api';
 
 function RegisterForm({ onRegister }) {
-  const [username, setName] = useState('');              // <-- Added name state
+  const [name, setName] = useState('');              // <-- Added name state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,7 +16,7 @@ function RegisterForm({ onRegister }) {
       return;
     }
     try {
-      await register({ username, email, password });      // <-- Include name here
+      await register({name, email, password });      // <-- Include name here
       const data = await login({ email, password });
       localStorage.setItem('token', data.token);
       onRegister();
