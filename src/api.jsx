@@ -2,6 +2,7 @@ const API_BASE = 'https://task-tracker-backend-aczo.onrender.com/api';
 
 // Register new user
 export const register = async (userData) => {
+  console.log("Registering user:", userData); // 
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
