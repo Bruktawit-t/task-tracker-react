@@ -1,4 +1,4 @@
-const API_BASE = 'https://task-tracker-backend-aczo.onrender.com';
+const API_BASE = 'https://task-tracker-backend-aczo.onrender.com/api';
 
 // Register new user
 export const register = async (userData) => {
