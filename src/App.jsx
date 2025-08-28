@@ -36,8 +36,6 @@ function App() {
 
   const [filter, setFilter] = useState('all');
 
-  const token = localStorage.getItem('token');
-
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.toggle('dark', darkMode);
@@ -46,6 +44,7 @@ function App() {
 
   useEffect(() => {
     const loadTasks = async () => {
+      const token = localStorage.getItem('token'); // get latest token
       if (isLoggedIn && token) {
         try {
           const fetchedTasks = await fetchTasks(token);
@@ -60,7 +59,7 @@ function App() {
       }
     };
     loadTasks();
-  }, [isLoggedIn, token]);
+  }, [isLoggedIn]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -98,6 +97,9 @@ function App() {
   };
 
   const saveEdits = async (taskId) => {
+    const token = localStorage.getItem('token'); // latest token
+    if (!token) return alert('You must be logged in');
+
     if (!editFields.title || !editFields.priority) {
       alert('Title and Priority are required');
       return;
@@ -129,21 +131,19 @@ function App() {
 
   const handleAddTask = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token'); // latest token
     if (!token) return alert('You must be logged in');
     if (!newTask.title || !newTask.priority) {
       return alert('Title and Priority are required');
     }
 
     try {
-      const addedTask = await addTask(
-        { ...newTask, completed: 0 },
-        token
-      );
+      const addedTask = await addTask({ ...newTask, completed: 0 }, token);
 
-      const taskToInsert = (
+      const taskToInsert =
         addedTask && addedTask.id
-      ) ? { ...addedTask, completed: addedTask.completed === 1 || addedTask.completed === true ? true : false } :
-        { id: addedTask.id || Date.now(), ...newTask, completed: false };
+          ? { ...addedTask, completed: addedTask.completed === 1 || addedTask.completed === true ? true : false }
+          : { id: addedTask.id || Date.now(), ...newTask, completed: false };
 
       setTasks((prev) => [taskToInsert, ...prev]);
       setNewTask({
@@ -155,11 +155,12 @@ function App() {
       setActiveTab('view');
     } catch (err) {
       console.error('Add error:', err.message || err);
-      alert('Failed to add task');
+      alert('Failed to add task. Check console for details.');
     }
   };
 
   const handleDeleteTask = async (id) => {
+    const token = localStorage.getItem('token'); // latest token
     if (!token) return alert('You must be logged in');
     if (!window.confirm('Are you sure you want to delete this task?')) return;
 
@@ -173,10 +174,11 @@ function App() {
   };
 
   const handleToggleComplete = async (taskId, currentCompleted) => {
+    const token = localStorage.getItem('token'); // latest token
     if (!token) return alert('You must be logged in');
 
     try {
-      const taskToUpdate = tasks.find(t => t.id === taskId);
+      const taskToUpdate = tasks.find((t) => t.id === taskId);
       if (!taskToUpdate) return;
 
       const payload = {
@@ -188,12 +190,6 @@ function App() {
       };
 
       await updateTask(taskId, payload, token);
-
-      setTasks(prev =>
-        prev.map(t =>
-          t.id === taskId ? { ...t, completed: !currentCompleted } : t
-        )
-      );
 
       const refreshed = await fetchTasks(token);
       const normalized = (refreshed || []).map((t) => ({
@@ -292,6 +288,7 @@ function App() {
         </div>
       </div>
 
+      {/* Add Task Form */}
       {activeTab === 'add' && (
         <form onSubmit={handleAddTask} className="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-6 space-y-4">
           <input
@@ -335,9 +332,9 @@ function App() {
         </form>
       )}
 
+      {/* View Tasks */}
       {activeTab === 'view' && (
         <>
-          {/* Filter Buttons */}
           <div className="mb-4 space-x-2">
             <button
               onClick={() => setFilter('all')}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { register, login } from '../api';
 
 function RegisterForm({ onRegister }) {
-  const [name, setName] = useState('');              // <-- Added name state
+  const [username, setUsername] = useState('');      // <-- use username instead of name
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,7 +16,7 @@ function RegisterForm({ onRegister }) {
       return;
     }
     try {
-      await register({name, email, password });      // <-- Include name here
+      await register({ username, email, password }); // <-- send username to backend
       const data = await login({ email, password });
       localStorage.setItem('token', data.token);
       onRegister();
@@ -31,9 +31,9 @@ function RegisterForm({ onRegister }) {
       {error && <p className="error">{error}</p>}
       <input
         type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Username"                        // <-- updated placeholder
+        value={username}
+        onChange={(e) => setUsername(e.target.value)} // <-- updated state setter
         required
         className="input"
       />
